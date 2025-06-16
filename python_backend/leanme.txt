@@ -1,0 +1,3 @@
+.\venv\Scripts\activate
+https://youtu.be/51J_bYYMO2k?si=-ewdFhg07Qw6kbzq
+.\venv\Scripts\activate 

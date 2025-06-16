@@ -1,0 +1,106 @@
+#***************************
+# crear proyecto nest
+
+nest new back_comptervision
+
+#***************************
+# instalacion de paquetes
+
+npm i sharp
+npm i express
+npm i typeorm
+npm i @nestjs/config
+npm i @nestjs/typeorm
+npm i typeorm-naming-strategies
+npm i bcryptjs
+npm i formidable
+npm i jsonwebtoken
+
+npm install pg --save
+
+
+npm i @types/express --save-dev
+npm i @types/bcryptjs --save-dev
+npm i @types/formidable --save-dev
+npm i @types/jsonwebtoken --save-dev
+
+imagenes mas grandes
+npm install body-parser
+correo
+npm install nodemailer @nestjs-modules/mailer handlebars
+npm install @nestjs/schedule
+leer datos google formularios 
+npm install googleapis
+
+#******************************
+Creacion de los modelos 
+#******************************
+nest g cl models/eventos --no-spec
+nest g cl models/registroasistencia --no-spec
+nest g cl models/usuarios --no-spec
+nest g cl models/reportes --no-spec
+nest g cl models/fotografias --no-spec
+nest g cl models/acceso --no-spec
+nest g cl models/rol --no-spec
+Creacion modulo connexion
+******************************
+nest g mo  config/connexion/connexion  --no-spec
+nest g mo  utilidades --no-spec
+
+#******************************
+nest g mo  python-service
+npm install axios
+***********************************************
+nest g mo modulos/privado/eventos
+nest g s modulos/privado/eventos --no-spec
+nest g co modulos/privado/eventos --no-spec
+
+nest g mo modulos/privado/fotografias
+nest g s modulos/privado/fotografias --no-spec
+nest g co modulos/privado/fotografias --no-spec
+
+nest g mo modulos/privado/registroasistencia
+nest g s modulos/privado/registroasistencia --no-spec
+nest g co modulos/privado/registroasistencia --no-spec
+
+nest g mo modulos/privado/reportes
+nest g s modulos/privado/reportes --no-spec
+nest g co modulos/privado/reportes --no-spec
+
+nest g mo modulos/privado/usuarios
+nest g s modulos/privado/usuarios --no-spec
+nest g co modulos/privado/usuarios --no-spec
+
+nest g mo modulos/python-service/python
+nest g s modulos/python-service/python --no-spec
+nest g co modulos/python-service/python --no-spec
+
+nest g mo modulos/privado/rol
+nest g s modulos/privado/rol --no-spec
+nest g co modulos/privado/rol --no-spec
+*******************************************************
+#nest g mo modulos/privado    -- modulo privado donde van los children
+**************************************************
+Creacion modulo Publico
+nest g mo modules/public/access
+nest g s modules/public/access --no-spec
+nest g co modules/public/access --no-spec
+
+nest g mo modules/public/registro
+nest g s modules/public/registro --no-spec
+nest g co modules/public/registro --no-spec
+
+#nest g mo modules/public  -- modulo public donde van los children
+****************************************************
+ #nest g provider middlewar/seguridad
+
+ crear service, controler de rol
+ hacer los enpoint crear usuariocon rol
+ iniciar sesion 
+ **************************************************
+nest g mo mailer --no-spec
+nest g s mailer --no-spec
+nest g co mailer --no-spec
+
+************************************
+ 
