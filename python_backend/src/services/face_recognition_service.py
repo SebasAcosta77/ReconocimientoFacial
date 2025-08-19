@@ -1,3 +1,4 @@
+# src/services/face_recognition_service.py
 import dlib
 import face_recognition
 import numpy as np
@@ -8,6 +9,19 @@ import threading
 import asyncio
 import time
 import os
+from fastapi import FastAPI, Response
+from fastapi.middleware.cors import CORSMiddleware
+
+app = FastAPI()
+
+# Configurar CORS para permitir solicitudes desde tu frontend
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],  # Ajusta según la URL de tu frontend
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 class FaceRecognitionService:
     def __init__(self):
@@ -18,59 +32,61 @@ class FaceRecognitionService:
         self.known_face_ids = []
         self.camera_index = 0
         self.nest_api_url = "http://localhost:3550"
+        self.jwt_token = ""
         self.is_running = False
         self.frame_count = 0
         self.recognition_thread = None
         self.tracked_faces = []
         self.already_registered = set()
+        self.current_frame = None  # Almacena el último fotograma para streaming
+
+    def set_token(self, token: str):
+        self.jwt_token = token
+
+    def get_auth_headers(self):
+        return {"Authorization": f"Bearer {self.jwt_token}"} if self.jwt_token else {}
 
     def process_image(self, img):
         ruta = img.get("rutaImagen")
         cod_usuario = img.get("codUsuario")
         if not ruta or not cod_usuario:
-            print(f"Skipping image: Missing rutaImagen or codUsuario - {img}")
+            print(f"Omitiendo imagen: Falta rutaImagen o codUsuario - {img}")
             return None
         if not os.path.exists(ruta):
-            print(f"Skipping image: File not found - {ruta}")
+            print(f"Omitiendo imagen: Archivo no encontrado - {ruta}")
             return None
         try:
-            print(f"Starting to process image: {ruta}")
+            print(f"Comenzando a procesar imagen: {ruta}")
             image = face_recognition.load_image_file(ruta)
-            print(f"Image loaded: {ruta}")
             encodings = face_recognition.face_encodings(image)
             if encodings:
-                print(f"Loaded face encoding for user {cod_usuario}")
                 return (encodings[0], cod_usuario)
             else:
-                print(f"No faces found in image: {ruta}")
+                print(f"No se encontraron rostros en la imagen: {ruta}")
                 return None
         except Exception as e:
-            print(f"Error processing image {ruta}: {e}")
+            print(f"Error al procesar la imagen {ruta}: {e}")
             return None
 
     async def load_known_faces(self):
         try:
-            print("Fetching images from API...")
-            response = requests.get(f"{self.nest_api_url}/privado/fotografias/listar/todas", timeout=10)
+            print("Obteniendo imágenes desde la API...")
+            response = requests.get(
+                f"{self.nest_api_url}/privado/fotografias/listar/todas",
+                headers=self.get_auth_headers(),
+                timeout=10
+            )
             response.raise_for_status()
             images = response.json().get("data", [])
-            print(f"Loaded {len(images)} images from API")
-
             self.known_face_encodings.clear()
             self.known_face_ids.clear()
-
             for img in images:
                 result = self.process_image(img)
                 if result:
                     self.known_face_encodings.append(result[0])
                     self.known_face_ids.append(result[1])
-                    print(f"Added face encoding for {result[1]}")
-                else:
-                    print(f"Failed to process image for {img.get('codUsuario')}")
-
-            print(f"Total encodings loaded: {len(self.known_face_encodings)}")
         except Exception as e:
-            print(f"Error loading known faces: {e}")
+            print(f"Error al cargar rostros conocidos: {e}")
 
     async def register_attendance(self, cod_usuario, cod_evento):
         try:
@@ -81,18 +97,32 @@ class FaceRecognitionService:
                 "estadoValidacion": True,
                 "observacionesAsistencia": "Asistencia registrada por reconocimiento facial",
             }
-            print(f"Sending attendance: {payload}")
-            response = requests.post(f"{self.nest_api_url}/privado/registroasistencia/add", json=payload, timeout=10)
+            response = requests.post(
+                f"{self.nest_api_url}/privado/registroasistencia/add",
+                json=payload,
+                headers=self.get_auth_headers(),
+                timeout=10
+            )
             response.raise_for_status()
-            print(f"Attendance registered: {response.json()}")
+            print(f"Asistencia registrada para: {cod_usuario}")
         except Exception as e:
-            print(f"Error registering attendance for {cod_usuario}: {e}")
+            print(f"Error al registrar asistencia para {cod_usuario}: {e}")
+
+    def gen_stream(self):
+        """Generar flujo MJPEG desde el fotograma actual."""
+        while self.is_running:
+            if self.current_frame is not None:
+                ret, buffer = cv2.imencode('.jpg', self.current_frame)
+                frame = buffer.tobytes()
+                yield (b'--frame\r\n'
+                       b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+            time.sleep(0.1)  # Controlar la tasa de fotogramas
 
     def recognition_loop(self, cod_evento):
-        print("Initializing camera...")
+        print("Inicializando cámara...")
         cap = cv2.VideoCapture(self.camera_index, cv2.CAP_DSHOW)
         if not cap.isOpened():
-            print("Error: Could not open camera.")
+            print("Error: No se pudo abrir la cámara.")
             self.is_running = False
             return
 
@@ -102,7 +132,7 @@ class FaceRecognitionService:
         while self.is_running:
             ret, frame = cap.read()
             if not ret:
-                print("Error: Failed to capture frame.")
+                print("Error: No se pudo capturar el fotograma.")
                 break
 
             frame = cv2.flip(frame, 1)
@@ -143,7 +173,6 @@ class FaceRecognitionService:
                         if name not in self.already_registered:
                             asyncio.run(self.register_attendance(name, cod_evento))
                             self.already_registered.add(name)
-                            print(f"Attendance for {name} registered")
 
                     new_tracked_faces.append({
                         "encoding": encoding,
@@ -169,31 +198,24 @@ class FaceRecognitionService:
                 cv2.rectangle(frame, (left, bottom), (right, bottom + 30), color, cv2.FILLED)
                 cv2.putText(frame, name, (left + 6, bottom + 22), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 1)
 
-            cv2.imshow("Video", frame)
+            self.current_frame = frame  # Actualizar el fotograma actual para streaming
             self.frame_count += 1
-
-            if cv2.waitKey(1) & 0xFF == 27:
-                print("ESC pressed. Exiting...")
-                self.is_running = False
-                break
-
             time.sleep(0.01)
 
         cap.release()
-        cv2.destroyAllWindows()
         self.is_running = False
 
     async def start_recognition(self, cod_evento):
         if self.is_running:
-            return {"status": "Recognition already running"}
+            return {"status": "Reconocimiento ya en ejecución"}
         self.is_running = True
         await self.load_known_faces()
         self.recognition_thread = threading.Thread(target=self.recognition_loop, args=(cod_evento,))
         self.recognition_thread.start()
-        return {"status": "Recognition started"}
+        return {"status": "Reconocimiento iniciado"}
 
     def stop_recognition(self):
         self.is_running = False
         if self.recognition_thread:
             self.recognition_thread.join()
-        return {"status": "Recognition stopped"}
+        return {"status": "Reconocimiento detenido"}

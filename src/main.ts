@@ -4,7 +4,7 @@ import * as bodyParser from 'body-parser';
 import { join } from 'path';
 
 async function bootstrap() {
-  const port = Number(process.env.PORT_SERVER)
+  const port = Number(process.env.PORT_SERVER);
   const app = await NestFactory.create(AppModule);
 
   // Aumenta el límite del tamaño del body
@@ -12,17 +12,14 @@ async function bootstrap() {
   app.use(bodyParser.urlencoded({ limit: '20mb', extended: true }));
 
   app.enableCors({
-    origin: 'http://localhost:5000', // Permite el servicio en Python
-    methods: 'GET,POST',
-    allowedHeaders: 'Content-Type',
+    origin: ['http://localhost:3000', 'http://localhost:5000'], // Permite el servicio en Python
+    methods: 'GET,POST,PUT,DELETE,OPTIONS',
+    allowedHeaders: ['Content-Type', 'Authorization'], 
+    credentials: true,
   });
 
-  
-
-
-  await app.listen(port, ()=>{
-    console.log('Servidor funcionando en puerto' + port)
-
+  await app.listen(port, () => {
+    console.log('Servidor funcionando en puerto' + port);
   });
 }
 bootstrap();

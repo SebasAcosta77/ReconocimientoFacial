@@ -15,7 +15,7 @@ export class Reportes {
     public fechaReporte: Date;
 
     @Column({ type: "varchar", length: 12, name: "cod_usuario", nullable: false })
-    public codUsuario: String;
+    public codUsuario: string;
 
     @Column({ type: "integer", name: "cod_evento", nullable: false })
     public codEvento: number;
@@ -39,7 +39,7 @@ export class Reportes {
     
         })
     @JoinColumn([{ name: "cod_evento", referencedColumnName: "codEvento" }])
-    public codEventoR?: Usuarios;//no es obligatorio
+    public codEventoR?: Eventos;//no es obligatorio
 
     //Relacion con la tabla registroasistencia 1 a muchos
     @ManyToOne(() => Registroasistencia, (objRegistro: Registroasistencia) => objRegistro.codReporteRegis, {// muchos a uno imagen - sitio
@@ -48,9 +48,9 @@ export class Reportes {
     
         })
     @JoinColumn([{ name: "cod_asistencia", referencedColumnName: "codAsistencia" }])
-    public codRegistroRepo?: Usuarios;//no es obligatorio
+    public codRegistroRepo?: Registroasistencia;//no es obligatorio
 
-    constructor(idReporte: number, descripcion: string, fechaReporte: Date, codUsuario: String, codEvento: number, codAsistencia: number) {
+    constructor(idReporte: number, descripcion: string, fechaReporte: Date, codUsuario: string, codEvento: number, codAsistencia: number) {
         this.idReporte = idReporte;
         this.descripcion = descripcion;
         this.fechaReporte = fechaReporte;

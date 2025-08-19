@@ -13,7 +13,7 @@ export class Rol {
     @Column({ type: "integer", name: "estado_rol", default: 1, nullable: false })
     public estadoRol: number;
 
-    @ManyToOne(() => Usuarios, (objUsuario) => objUsuario.codRolU)
+    @ManyToOne(() => Usuarios, (objUsuario) => objUsuario.rol)
     public usuarios?: Usuarios[];
 
     constructor(cod: number, nom: string, est: number) {

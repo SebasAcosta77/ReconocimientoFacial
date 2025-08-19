@@ -103,4 +103,7 @@ nest g s mailer --no-spec
 nest g co mailer --no-spec
 
 ************************************
+pdf
+npm install pdfkit
+npm install @types/pdfkit --save-dev
  

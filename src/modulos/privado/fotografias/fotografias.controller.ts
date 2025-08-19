@@ -78,6 +78,7 @@ export class FotografiasController {
     @Get("/listar/todass")
     public async listarTodasImagenes() {
         try {
+            
             const imagenes = await this.imagenService.listarTodas();
             if (!imagenes.length) {
                 return { mensaje: "No se encontraron imágenes", data: [] };

@@ -1,0 +1,25 @@
+services:
+  nest-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.nest
+    container_name: nestjs-backend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - face-api
+    networks:
+      - backend_net
+
+  face-api:
+    build:
+      context: ./python_backend
+    container_name: face-api
+    ports:
+      - "5000:5000"
+    networks:
+      - backend_net
+
+networks:
+  backend_net:
+    driver: bridge

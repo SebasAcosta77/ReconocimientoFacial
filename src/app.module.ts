@@ -1,4 +1,9 @@
-import { MiddlewareConsumer, Module, NestModule, RequestMethod } from '@nestjs/common';
+import {
+  MiddlewareConsumer,
+  Module,
+  NestModule,
+  RequestMethod,
+} from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { ConnexionModule } from './config/connexion/connexion/connexion.module';
@@ -10,25 +15,29 @@ import { join } from 'path';
 import { Seguridad } from './middlewar/seguridad/seguridad';
 import { PublicModule } from './modules/public/public.module';
 import { MailModule } from './mailer/mail.module';
-
-
-
+import { TokenModule } from './utilidades/token.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true, envFilePath: ".env" }), ConnexionModule, PrivadoModule, PublicModule, PythonModule,
-  ServeStaticModule.forRoot({
-    rootPath: join(__dirname, '..', 'public'),
-    serveRoot: '/public', // Acceso a imágenes en /public/Uploads
-  }),
-  MailModule,
-  
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: '.env' }),
+    ConnexionModule,
+    PrivadoModule,
+    PublicModule,
+    PythonModule,
+    TokenModule,
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'src', 'doc', 'img', 'usuario'),
+      serveRoot: '/uploads/imagenes', // Ruta pública
+    }),
+    MailModule,
   ],
   controllers: [AppController],
   providers: [AppService, Seguridad],
 })
-export class AppModule implements NestModule{
+export class AppModule implements NestModule {
   public configure(consumer: MiddlewareConsumer) {
-    consumer.apply(Seguridad).forRoutes({path :'//*', method: RequestMethod.ALL});
-      
+    consumer
+      .apply(Seguridad)
+      .forRoutes({ path: '/privado/*', method: RequestMethod.ALL });
   }
 }
