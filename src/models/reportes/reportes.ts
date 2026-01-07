@@ -20,8 +20,7 @@ export class Reportes {
     @Column({ type: "integer", name: "cod_evento", nullable: false })
     public codEvento: number;
 
-    @Column({ type: "integer", name: "cod_asistencia", nullable: false })
-    public codAsistencia: number;
+    
 
     //relacion con la tabla usuarios 1 a muchos
     @ManyToOne(() => Usuarios, (objUsuario: Usuarios) => objUsuario.codReporteU, {// muchos a uno imagen - sitio
@@ -54,8 +53,8 @@ export class Reportes {
         this.idReporte = idReporte;
         this.descripcion = descripcion;
         this.fechaReporte = fechaReporte;
-        this.codUsuario = codUsuario;
         this.codEvento = codEvento;
-        this.codAsistencia = codAsistencia;
+        this.codUsuario = codUsuario;
+        
     }
 }

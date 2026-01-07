@@ -133,8 +133,8 @@ class FaceRegistrationService:
             )
             response.raise_for_status()
 
-            print(f"✅ Rostro registrado correctamente: {response.json()}")
-            return {"status": "✅ Rostro registrado", "image_name": image_name}
+            print(f" Rostro registrado correctamente: {response.json()}")
+            return {"status": " Rostro registrado", "image_name": image_name}
 
         except Exception as e:
             print(f"❌ Error en captura y registro: {e}")

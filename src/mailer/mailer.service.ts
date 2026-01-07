@@ -5,6 +5,7 @@ import { Eventos } from '../models/eventos/eventos';
 import { Registroasistencia } from '../models/registroasistencia/registroasistencia';
 import { Usuarios } from '../models/usuarios/usuarios';
 
+//pendiente corregir que solo se notifique un evento a la vez
 @Injectable()
 export class MailService {
     private eventosRepository: Repository<Eventos>;

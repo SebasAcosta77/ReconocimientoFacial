@@ -11,6 +11,8 @@ import {
 } from '@nestjs/common';
 import { ReportesService } from './reportes.service';
 import { Reportes } from 'src/models/reportes/reportes';
+import { Response } from 'express';
+import { Res } from '@nestjs/common';
 
 @Controller('/reportes')
 export class ReportesController {
@@ -103,5 +105,38 @@ export class ReportesController {
     return this.reporteService.consultarTodoConRelaciones();
   }
 
-  
+  @Get('/informe/:codEvento')
+  public async generarInforme(
+    @Param('codEvento') codEvento: number,
+    @Res() res: Response,
+  ): Promise<void> {
+    return this.reporteService.generarInformeEvento(codEvento, res);
+  }
+
+  // ✅ Actualizar reporte por código de evento
+  @Put('/update/evento/:codEvento')
+  public actualizarPorEvento(
+    @Param('codEvento') codEvento: number,
+    @Body() objActualizar: Partial<Reportes>,
+  ): any {
+    if (isNaN(codEvento)) {
+      throw new HttpException(
+        'Código de evento no válido',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+    return this.reporteService.actualizarPorEvento(codEvento, objActualizar);
+  }
+
+  // Eliminar todos los reportes asociados a un evento
+  @Delete('/delete/evento/:codEvento')
+  public eliminarReportesPorEvento(@Param('codEvento') codEvento: number): any {
+    if (isNaN(codEvento)) {
+      throw new HttpException(
+        'Código de evento no válido',
+        HttpStatus.NOT_ACCEPTABLE,
+      );
+    }
+    return this.reporteService.eliminarPorEvento(codEvento);
+  }
 }

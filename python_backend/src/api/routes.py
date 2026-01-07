@@ -99,3 +99,4 @@ async def register_face_feed():
     except Exception as e:
         print(f"Error en register_face_feed: {e}")  # Depuración
         raise HTTPException(status_code=500, detail=f"Error al transmitir el stream de registro: {str(e)}")
+
